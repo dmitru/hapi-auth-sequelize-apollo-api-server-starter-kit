@@ -8,6 +8,7 @@ import { graphQLSchema } from 'app/graphQLSchema';
 
 import logger from 'app/logger';
 import GoodWinston from 'good-winston';
+
 const goodWinstonStream = new GoodWinston({ winston: logger });
 
 import { validateSession } from 'app/api/auth/utils';
@@ -15,7 +16,7 @@ import config from 'app/config';
 import models from 'app/models';
 
 function createServer() {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     // Create a server with a host and port
     const server = new Hapi.Server();
     server.connection({
@@ -23,16 +24,13 @@ function createServer() {
       port: process.env.PORT || 8000,
     });
 
-    models.sequelize
-      .authenticate()
-      .then(() => {
-        logger.info(
-          'Server: connection to the DB has been established successfully'
-        );
-      })
-      .catch(err => {
-        logger.error('Server: error while connecting to the DB', err);
-      });
+    try {
+      await models.sequelize.authenticate();
+      logger.info('Server: connection to the DB has been established successfully');
+    } catch (err) {
+      logger.error('Server: error while connecting to the DB', err);
+      throw err;
+    }
 
     server.state('auth-token', {
       path: '/',
@@ -44,89 +42,86 @@ function createServer() {
       strictHeader: true,
     });
 
-    models.sequelize
-      .sync()
-      // .then(() => populateWithInitialData(models))
-      .then(() => {
-        server.register(
-          [
-            {
-              register: graphqlHapi,
-              options: {
-                path: '/graphql',
-                graphqlOptions: {
-                  schema: graphQLSchema,
-                },
-                route: {
-                  cors: true,
-                },
+    models.sequelize.sync().then(() => {
+      server.register(
+        [
+          {
+            register: graphqlHapi,
+            options: {
+              path: '/graphql',
+              graphqlOptions: {
+                schema: graphQLSchema,
+              },
+              route: {
+                cors: true,
               },
             },
-            {
-              register: graphiqlHapi,
-              options: {
-                path: '/graphiql',
-                graphiqlOptions: {
-                  endpointURL: '/graphql',
-                },
+          },
+          {
+            register: graphiqlHapi,
+            options: {
+              path: '/graphiql',
+              graphiqlOptions: {
+                endpointURL: '/graphql',
               },
             },
-            {
-              register: Good,
-              options: {
-                reporters: {
-                  winston: [goodWinstonStream],
-                },
+          },
+          {
+            register: Good,
+            options: {
+              reporters: {
+                winston: [goodWinstonStream],
               },
             },
-            {
-              register: require('hapi-auth-jwt2'),
-            },
-            {
-              register: require('bell'),
-            },
-          ],
-          err => {
-            if (err) {
-              reject(err);
-            }
-
-            server.auth.strategy('jwt', 'jwt', 'required', {
-              key: config.jwtSecret,
-              verifyOptions: { algorithms: ['HS256'], ignoreExpiration: true },
-              validateFunc: validateSession,
-              errorFunc: errorContext => {
-                errorContext.errorType = 'unauthorized';
-                errorContext.message = 'session-expired';
-                return errorContext;
-              },
-            });
-
-            server.auth.strategy('google', 'bell', {
-              provider: 'google',
-              password: config.jwtSecret,
-              clientId: config.socialAuth.google.clientId,
-              clientSecret: config.socialAuth.google.clientSecret,
-              isSecure: process.env.NODE_ENV === 'production',
-              location: config.webAppPublicUrl,
-            });
-
-            // Look through the routes in
-            // all the subdirectories of API
-            // and create a new route for each
-            glob
-              .sync('api/**/routes/*.js', {
-                root: __dirname,
-              })
-              .forEach(file => {
-                const route = require(path.join(__dirname, file));
-                server.route(route);
-              });
-
-            resolve(server);
+          },
+          {
+            register: require('hapi-auth-jwt2'),
+          },
+          {
+            register: require('bell'),
+          },
+        ],
+        (err) => {
+          if (err) {
+            reject(err);
           }
-        );
-      });
+
+          server.auth.strategy('jwt', 'jwt', 'required', {
+            key: config.jwtSecret,
+            verifyOptions: { algorithms: ['HS256'], ignoreExpiration: true },
+            validateFunc: validateSession,
+            errorFunc: (errorContext) => {
+              errorContext.errorType = 'unauthorized';
+              errorContext.message = 'session-expired';
+              return errorContext;
+            },
+          });
+
+          server.auth.strategy('google', 'bell', {
+            provider: 'google',
+            password: config.jwtSecret,
+            clientId: config.socialAuth.google.clientId,
+            clientSecret: config.socialAuth.google.clientSecret,
+            isSecure: process.env.NODE_ENV === 'production',
+            location: config.webAppPublicUrl,
+          });
+
+          // Look through the routes in
+          // all the subdirectories of API
+          // and create a new route for each
+          logger.debug('createServer: Scanning api/**/routes/*.js for route files...');
+          glob
+            .sync(path.join(__dirname, 'api/**/routes/*.js'))
+            .forEach((file) => {
+              logger.debug(`createServer: Adding route ${file}`);
+              const route = require(file).default;
+              server.route(route);
+            });
+
+          resolve(server);
+        },
+      );
+    });
   });
 }
 

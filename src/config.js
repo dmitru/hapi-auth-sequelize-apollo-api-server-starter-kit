@@ -2,11 +2,10 @@ import path from 'path';
 import normalizeUrl from 'normalize-url';
 
 import dotenv from 'dotenv';
+
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const webAppPublicUrl = normalizeUrl(
-  process.env.WEBAPP_PUBLIC_URL || 'http://localhost:3000'
-);
+const webAppPublicUrl = normalizeUrl(process.env.WEBAPP_PUBLIC_URL || 'http://localhost:3000');
 
 export default {
   webAppPublicUrl,

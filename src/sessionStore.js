@@ -4,7 +4,7 @@ import logger from 'app/logger';
 export class SessionStore {
   init(options) {
     this.client = redis.createClient(options);
-    this.client.on('error', err => {
+    this.client.on('error', (err) => {
       logger.error('SessionStore: redis error: ', err);
     });
   }

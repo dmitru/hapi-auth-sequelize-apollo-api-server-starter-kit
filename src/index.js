@@ -1,7 +1,7 @@
 import createServer from 'app/server';
 
-createServer().then(server => {
-  server.start(err => {
+createServer().then((server) => {
+  server.start((err) => {
     if (err) {
       throw err;
     }

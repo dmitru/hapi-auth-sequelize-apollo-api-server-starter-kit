@@ -1,7 +1,7 @@
 import { USER_ROLE } from 'app/constants';
 
 module.exports = {
-  up: function(queryInterface, Sequelize) {
+  up(queryInterface, Sequelize) {
     return queryInterface.createTable('Users', {
       id: {
         allowNull: false,
@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      emailForLogin: {
+      email: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
@@ -44,7 +44,7 @@ module.exports = {
     });
   },
 
-  down: function(queryInterface, Sequelize) {
+  down(queryInterface, Sequelize) {
     return queryInterface.dropTable('Users');
   },
 };

@@ -1,74 +1,53 @@
-'use strict';
+import Joi from 'joi';
+import Boom from 'boom';
 
-const config = require('app/config');
+import logger from 'app/logger';
+import models from 'app/models';
 
-const Boom = require('boom');
-const constants = require('app/constants');
-const { ACCOUNT_TYPE, SUBSCRIPTION_PLAN_IDS, BILLING_PERIOD } = constants;
+import { USER_ROLE } from 'app/constants';
 
-const logger = require('app/logger');
-const models = require('app/models');
-const signupSchema = require('../schemas/signup');
-const userFunctions = require('../util');
-const { hashPassword, verifyUniqueUser, createToken } = userFunctions;
+import { hashPassword, createSessionTokenAndLogin } from '../utils';
 
-module.exports = {
+const signupSchema = Joi.object({
+  email: Joi.string()
+    .trim()
+    .email()
+    .required(),
+  password: Joi.string()
+    .required()
+    .trim()
+    .min(6),
+});
+
+export default {
   method: 'POST',
   path: '/api/signupWithEmailAndPassword/',
   config: {
     auth: false,
-    // Before the route handler runs, verify that the user is unique
-    pre: [{ method: verifyUniqueUser }],
-    handler: (req, res) => {
-      const {
-        stripeToken,
-        email,
-        accountType,
-        firstName,
-        lastName,
-        pkcCode,
-        billingPeriod,
-      } = req.payload;
+    handler: async (req, res) => {
+      const { email, password } = req.payload;
 
-      const userSetupPromise = ([stripeCustomer, subscription]) => {
-        const userData = {
-          stripeCustomerId: stripeCustomer.id,
-          subscriptionId: subscription.id,
-        };
-        return Promise.all([
-          Promise.resolve(userData),
-          hashPassword(req.payload.password),
-        ])
-          .then(([{ stripeCustomerId, subscriptionId }, passwordHash]) =>
-            models.User
-              .build({
-                accountType,
-                email,
-                password: passwordHash,
-                firstName,
-                lastName,
-                stripeCustomerId,
-                stripeSubscriptionId: subscriptionId,
-                signupCompleted: true,
-                billingPeriod,
-                subscriptionPlan,
-              })
-              .save()
-          )
-          .then(user => res({ user, token: createToken(user) }).code(201))
-          .catch(err => {
-            res(Boom.badImplementation(err));
-          });
-      };
+      const hashedPassword = await hashPassword(password);
+      try {
+        const newUser = await models.User
+          .build({
+            role: USER_ROLE.USER,
+            email,
+            password: hashedPassword,
+            displayName: email,
+          })
+          .save();
 
-      stripeSetupPromise.then(userSetupPromise, error => {
-        logger.error('signup: error while processing payment:', error);
-        let errorMsg = 'Could not process the payment.';
-        if (error.message) {
-          errorMsg += ` Reason: ${error.message}`;
+        const token = await createSessionTokenAndLogin(newUser);
+        res({ user: newUser, token }).code(201);
+      } catch (err) {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          res(Boom.conflict('The email is already taken'));
+          return;
         }
-        res(Boom.serverUnavailable(errorMsg));
-      });
+        logger.error('signupWithEmailAndPassword: ', err);
+        res(Boom.badImplementation(err));
+      }
     },
     // Validate the payload against the Joi schema
     validate: {

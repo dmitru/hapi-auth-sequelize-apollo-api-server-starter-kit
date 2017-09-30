@@ -13,7 +13,7 @@ import config from 'app/config';
 
 /**
  * Generate a salt at level 10 strength
- * @param {string} password 
+ * @param {string} password
  * @returns Promise resolving to password hash
  */
 export function hashPassword(password) {
@@ -50,7 +50,7 @@ const SEVEN_DAYS_IN_MS = 1000 * 3600 * 24 * 7;
 
 /**
  * Creates a new session token for a given user, saves it in the session store
- * @param {*} user 
+ * @param {*} user
  * @returns The created session token
  */
 export function createSessionTokenAndLogin(user) {
@@ -67,7 +67,8 @@ export function createSessionTokenAndLogin(user) {
     userId: user.id,
     email: user.email,
   });
-  return token;
+
+  return Promise.resolve(token);
 }
 
 export function invalidateSessionToken(session) {
@@ -77,15 +78,15 @@ export function invalidateSessionToken(session) {
 
 /**
  * Validates a session
- * @param {*} decodedSession 
- * @param {*} req 
- * @param {*} callback - (error: any?, sessionIsValid: bool) 
+ * @param {*} decodedSession
+ * @param {*} req
+ * @param {*} callback - (error: any?, sessionIsValid: bool)
  */
 export function validateSession(decodedSession, req, callback) {
   const sessionId = decodedSession.id;
   sessionStore
     .get(sessionId)
-    .then(storedSession => {
+    .then((storedSession) => {
       if (!storedSession) {
         logger.warn('validateSession: no stored session', { sessionId });
         return callback(null, false);
@@ -113,7 +114,7 @@ export function validateSession(decodedSession, req, callback) {
       }
       return callback(null, true);
     })
-    .catch(err => {
+    .catch((err) => {
       logger.error('validateSession: error', err, { sessionId });
       callback(err, false);
     });
@@ -127,7 +128,7 @@ export function fetchUserData(req, res) {
   if (!userId) {
     return res(null);
   }
-  return models.User.findById(req.auth.credentials.userId).then(user => {
+  return models.User.findById(req.auth.credentials.userId).then((user) => {
     if (!user) {
       logger.warn('fetchUserData: no such user', { userId });
       return res(null);
@@ -139,7 +140,7 @@ export function fetchUserData(req, res) {
 /**
  * Generates and saves password reset token for a given user,
  * then sends out a password reset email
- * @param {*} user 
+ * @param {*} user
  */
 export function sendPasswordResetEmail(user) {
   return new Promise((resolve, reject) => {
@@ -164,7 +165,7 @@ export function sendPasswordResetEmail(user) {
         `${config.email.passwordReset.resetLink}${token}\n\n` +
         'If you did not request this, please ignore this email and your password will remain unchanged.\n',
     };
-    transporter.sendMail(mailOptions, err => {
+    transporter.sendMail(mailOptions, (err) => {
       if (err) {
         logger.error('sendPasswordResetEmail: error: ', err);
         return reject(err);

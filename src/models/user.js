@@ -1,10 +1,12 @@
+import _ from 'lodash';
+
 import { USER_ROLE } from 'app/constants';
 
 export default function defineUserModel(sequelize, DataTypes) {
   const User = sequelize.define(
     'User',
     {
-      emailForLogin: {
+      email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
@@ -26,19 +28,15 @@ export default function defineUserModel(sequelize, DataTypes) {
     },
     {
       hooks: {
-        async afterCreate(user, options) {
-          // TODO: actions to do after a user signs up
-        },
+        // async afterCreate(user, options) {
+        // TODO: actions to do after a user signs up
+        // },
       },
-    }
+    },
   );
 
-  User.prototype.toJSON = function() {
-    const privateAttributes = [
-      'password',
-      'passwordResetToken',
-      'passwordResetTokenExpires',
-    ];
+  User.prototype.toJSON = function userToJSON() {
+    const privateAttributes = ['password', 'passwordResetToken', 'passwordResetTokenExpires'];
     return _.omit(this.dataValues, privateAttributes);
   };
 

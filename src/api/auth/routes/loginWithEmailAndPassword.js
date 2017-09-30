@@ -2,7 +2,8 @@ import Joi from 'joi';
 import Boom from 'boom';
 import bcrypt from 'bcryptjs';
 
-import { verifyEmailPasswordCredentials, createToken } from '../util';
+import models from 'app/models';
+import { createSessionTokenAndLogin } from '../utils';
 
 const authenticateUserSchema = Joi.object({
   email: Joi.string()
@@ -18,13 +19,15 @@ function verifyEmailPasswordCredentials(req, res) {
     .findOne({
       where: { email },
     })
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        return res(Boom.unauthorized('Incorrect email or password'));
+        res(Boom.unauthorized('Incorrect email or password'));
+        return;
       }
       bcrypt.compare(password, user.password, (err, isValid) => {
         if (isValid) {
-          return res(user);
+          res(user);
+          return;
         }
         res(Boom.unauthorized('Incorrect email or password'));
       });
@@ -38,9 +41,9 @@ export default {
     auth: false,
     // Check the user's password against the DB
     pre: [{ method: verifyEmailPasswordCredentials, assign: 'user' }],
-    handler: (req, res) => {
-      const user = req.pre.user;
-      const token = createToken(user);
+    handler: async (req, res) => {
+      const { user } = req.pre;
+      const token = await createSessionTokenAndLogin(user);
       res({ token, user });
     },
     validate: {

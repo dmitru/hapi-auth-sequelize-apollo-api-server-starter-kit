@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "babel-node src/index.js",
-    "watch": "nodemon src/index.js --exec babel-node",
+    "watch": " LOG_LEVEL=debug nodemon src/index.js --exec babel-node",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "test": "NODE_ENV=test mocha test --recursive --compilers js:babel-core/register  --require babel-polyfill --timeout=10000",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "apollo-server-hapi": "^1.1.2",
+    "app": "file:./src",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
@@ -28,7 +29,10 @@
     "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "dotenv": "^4.0.0",
+    "eslint-config-airbnb-base": "^12.0.1",
+    "eslint-plugin-import": "^2.7.0",
     "express": "^4.16.0",
+    "glob": "^7.1.2",
     "good": "^7.3.0",
     "good-winston": "^4.0.0",
     "graphql": "^0.11.5",
@@ -37,6 +41,7 @@
     "hapi-auth-jwt2": "^7.3.0",
     "joi": "^11.1.1",
     "jsonwebtoken": "^8.0.1",
+    "lodash": "^4.17.4",
     "nodemailer": "^4.1.1",
     "nodemon": "^1.12.1",
     "normalize-url": "^1.9.1",
