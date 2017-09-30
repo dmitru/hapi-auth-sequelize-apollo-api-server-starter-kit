@@ -1,29 +1,30 @@
 import redis from 'redis';
 import logger from 'app/logger';
 
-export class SessionStore {
+export class RedisSessionStore {
   init(options) {
     this.client = redis.createClient(options);
     this.client.on('error', (err) => {
-      logger.error('SessionStore: redis error: ', err);
+      logger.error('RedisSessionStore: redis error: ', err);
     });
   }
 
   set(key, data) {
-    const dataTransformed =
-      typeof data === 'string' ? data : JSON.stringify(data);
-    logger.debug(`SessionStore: set ${key}`);
+    const dataTransformed = typeof data === 'string' ? data : JSON.stringify(data);
+    logger.debug(`RedisSessionStore: set ${key}`);
     this.client.set(key, dataTransformed);
+    return Promise.resolve();
   }
 
   del(key) {
-    logger.debug(`SessionStore: del ${key}`);
+    logger.debug(`RedisSessionStore: del ${key}`);
     this.client.del(key);
+    return Promise.resolve();
   }
 
   get(key) {
     return new Promise((resolve, reject) => {
-      logger.debug(`SessionStore: get ${key}`);
+      logger.debug(`RedisSessionStore: get ${key}`);
       this.client.get(key, (err, result) => {
         if (err) {
           logger.error('SessionStore: redis error (get): ', err);
@@ -34,6 +35,31 @@ export class SessionStore {
     });
   }
 }
+
+export class MockedSessionStore {
+  init() {
+    this._store = {};
+  }
+
+  set(key, data) {
+    const dataTransformed = typeof data === 'string' ? data : JSON.stringify(data);
+    logger.debug(`MockedSessionStore: set ${key}`);
+    this._store[key] = dataTransformed;
+    return Promise.resolve();
+  }
+
+  del(key) {
+    logger.debug(`MockedSessionStore: del ${key}`);
+    delete this._store[key];
+    return Promise.resolve();
+  }
+
+  get(key) {
+    return Promise.resolve(this._store[key]);
+  }
+}
+
+const SessionStore = process.env.NODE_ENV === 'test' ? MockedSessionStore : RedisSessionStore;
 
 const sessionStore = new SessionStore();
 sessionStore.init({
