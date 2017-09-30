@@ -9,11 +9,11 @@ import { schema as graphQLSchema } from 'app/graphql/schema';
 import logger from 'app/logger';
 import GoodWinston from 'good-winston';
 
-const goodWinstonStream = new GoodWinston({ winston: logger });
-
 import { validateSession } from 'app/api/auth/utils';
 import config from 'app/config';
 import models from 'app/models';
+
+const goodWinstonStream = new GoodWinston({ winston: logger });
 
 function createServer() {
   return new Promise(async (resolve, reject) => {
@@ -49,9 +49,12 @@ function createServer() {
             register: graphqlHapi,
             options: {
               path: '/graphql',
-              graphqlOptions: {
+              graphqlOptions: async request => ({
                 schema: graphQLSchema,
-              },
+                context: {
+                  auth: request.auth,
+                },
+              }),
               route: {
                 cors: true,
               },

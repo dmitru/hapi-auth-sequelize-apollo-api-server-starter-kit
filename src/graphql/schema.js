@@ -5,7 +5,7 @@ import { resolvers as userResolvers, typeDefs as userTypeDefs } from './users';
 
 const RootQuery = `
 type Query {
-  user(id: Int!): User
+  me: User
 }
 `;
 const SchemaDefinition = `
