@@ -4,7 +4,7 @@ import Hapi from 'hapi';
 import Good from 'good';
 
 import { graphqlHapi, graphiqlHapi } from 'apollo-server-hapi';
-import { graphQLSchema } from 'app/graphQLSchema';
+import { schema as graphQLSchema } from 'app/graphql/schema';
 
 import logger from 'app/logger';
 import GoodWinston from 'good-winston';
@@ -110,13 +110,11 @@ function createServer() {
           // all the subdirectories of API
           // and create a new route for each
           logger.debug('createServer: Scanning api/**/routes/*.js for route files...');
-          glob
-            .sync(path.join(__dirname, 'api/**/routes/*.js'))
-            .forEach((file) => {
-              logger.debug(`createServer: Adding route ${file}`);
-              const route = require(file).default;
-              server.route(route);
-            });
+          glob.sync(path.join(__dirname, 'api/**/routes/*.js')).forEach((file) => {
+            logger.debug(`createServer: Adding route ${file}`);
+            const route = require(file).default;
+            server.route(route);
+          });
 
           resolve(server);
         },
