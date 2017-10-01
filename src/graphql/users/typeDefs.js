@@ -3,6 +3,7 @@ type User {
   id: Int!
   email: String!
   displayName: String
+  role: String!
 }
 
 extend type Query {
