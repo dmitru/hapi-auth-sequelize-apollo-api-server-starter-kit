@@ -2,11 +2,11 @@ import Joi from 'joi';
 import Boom from 'boom';
 
 import logger from 'app/logger';
-import models from 'app/models';
 
 import { USER_ROLE } from 'app/constants';
 
 import { hashPassword, createSessionTokenAndLogin } from '../auth';
+import User from '../dao';
 
 const signupSchema = Joi.object({
   email: Joi.string()
@@ -29,17 +29,16 @@ export default {
 
       const hashedPassword = await hashPassword(password);
       try {
-        const newUser = await models.User
-          .build({
-            role: USER_ROLE.USER,
-            email,
-            password: hashedPassword,
-            displayName: email,
-          })
-          .save();
+        const newUser = await User.create({
+          role: USER_ROLE.USER,
+          email,
+          password: hashedPassword,
+          displayName: email,
+        });
 
         const token = await createSessionTokenAndLogin(newUser);
         res({ user: newUser, token }).code(201);
+        return;
       } catch (err) {
         if (err.name === 'SequelizeUniqueConstraintError') {
           res(Boom.conflict('The email is already taken'));

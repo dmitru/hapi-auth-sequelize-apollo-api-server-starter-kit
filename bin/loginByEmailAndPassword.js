@@ -1,10 +1,10 @@
 import { createSessionTokenAndLogin } from 'app/features/users/auth';
-import models from 'app/models';
+import User from 'app/features/users/dao';
 
 (async () => {
   try {
     const email = process.argv[2];
-    const user = await models.User.findOne({ where: { email } });
+    const user = await User.getUserByEmail(email);
     if (!user) {
       console.error('User not found:', email);
       process.exit(1);

@@ -1,9 +1,8 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-import uuid from 'uuid/v4';
 import JWT from 'jsonwebtoken';
-import Boom from 'boom';
 import bcrypt from 'bcryptjs';
+import uuid from 'uuid/v4';
 
 import logger from 'app/logger';
 import sessionStore from 'app/sessionStore';
@@ -12,38 +11,20 @@ import config from 'app/config';
 import User from 'app/features/users/dao';
 
 /**
- * Generate a salt at level 10 strength
+ * Returns a hashed password
  * @param {string} password
  * @returns Promise resolving to password hash
  */
 export function hashPassword(password) {
-  return new Promise((resolve, reject) => {
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) {
-        return reject(err);
-      }
-      bcrypt.hash(password, salt, (err, hash) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(hash);
-      });
-    });
-  });
+  return bcrypt.hash(password, 12);
 }
 
 /**
  * @returns Random token to be used for password reset
  */
-export function generatePasswordResetToken() {
-  return new Promise((resolve, reject) => {
-    crypto.randomBytes(16, (err, buf) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(buf.toString('hex'));
-    });
-  });
+export async function generatePasswordResetToken() {
+  const buf = await crypto.randomBytes(16);
+  return buf.toString('hex');
 }
 
 /**
@@ -51,7 +32,7 @@ export function generatePasswordResetToken() {
  * @param {*} user
  * @returns The created session token
  */
-export function createSessionTokenAndLogin(user) {
+export async function createSessionTokenAndLogin(user) {
   const session = {
     id: uuid(),
     userId: user.id,
@@ -60,7 +41,7 @@ export function createSessionTokenAndLogin(user) {
   const token = JWT.sign(session, config.jwtSecret, {
     expiresIn: '7 days',
   });
-  sessionStore.set(session.id, session);
+  await sessionStore.set(session.id, session);
   logger.debug('createTokenAndLogin: creating a token for user', {
     userId: user.id,
     email: user.email,
@@ -69,9 +50,9 @@ export function createSessionTokenAndLogin(user) {
   return Promise.resolve(token);
 }
 
-export function invalidateSessionToken(session) {
-  logger.debug('invalidateSessionToken:', { sessionId: session.id });
-  sessionStore.del(session.id);
+export async function invalidateSessionBySessionId(sessionId) {
+  logger.debug('invalidateSessionBySessionId:', { sessionId });
+  await sessionStore.del(sessionId);
 }
 
 /**
@@ -97,7 +78,7 @@ export async function validateSession(decodedSession, req, callback) {
     });
 
     if (session.exp < new Date().getTime()) {
-      invalidateSessionToken(decodedSession);
+      invalidateSessionBySessionId(decodedSession.id);
       logger.debug('validateSession: session has expired', {
         userId: session.id,
         sessionId,
@@ -116,18 +97,19 @@ export async function validateSession(decodedSession, req, callback) {
 /**
  * Hapi pre- hook for fetching user data from the DB
  */
-export function fetchUserData(req, res) {
+export async function fetchUserData(req, res) {
   const userId = req.auth.credentials && req.auth.credentials.userId;
   if (!userId) {
     return res(null);
   }
-  return User.getUser(req.auth.credentials.userId).then((user) => {
-    if (!user) {
-      logger.warn('fetchUserData: no such user', { userId });
-      return res(null);
-    }
-    return res(user);
-  });
+
+  const user = await User.getUser(req.auth.credentials.userId);
+  if (!user) {
+    logger.warn('fetchUserData: no such user', { userId });
+    return res(null);
+  }
+
+  return res(user);
 }
 
 /**

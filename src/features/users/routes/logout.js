@@ -1,21 +1,14 @@
-import sessionStore from 'app/sessionStore';
-import { invalidateSessionToken } from '../auth';
+import { invalidateSessionBySessionId } from '../auth';
 
 export default {
   method: 'POST',
   path: '/api/logout/',
   config: {
-    handler: (req, res) => {
+    handler: async (req, res) => {
       const { credentials } = req.auth;
-      sessionStore.get(credentials.id).then((reply) => {
-        const session = JSON.parse(reply);
-        session.valid = false;
-        session.ended = new Date().getTime();
-
-        invalidateSessionToken(session);
-
-        res({ text: 'You have been logged out' });
-      });
+      const sessionId = credentials.id;
+      await invalidateSessionBySessionId(sessionId);
+      res({ text: 'You have been logged out' });
     },
   },
 };

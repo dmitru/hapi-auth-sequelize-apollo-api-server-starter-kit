@@ -12,6 +12,10 @@ class UserDAO {
       },
     });
   }
+
+  async create(data) {
+    return models.User.build(data).save();
+  }
 }
 
 const userDao = new UserDAO();
