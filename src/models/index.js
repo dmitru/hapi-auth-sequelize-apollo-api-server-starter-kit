@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
 const models = {};
 
 // Import models from all files in the current directory
-glob.sync(path.join(__dirname, '../modules/**/models/*.js')).forEach((file) => {
+glob.sync(path.join(__dirname, '../features/**/models/*.js')).forEach((file) => {
   const model = sequelize.import(file);
   models[model.name] = model;
 });

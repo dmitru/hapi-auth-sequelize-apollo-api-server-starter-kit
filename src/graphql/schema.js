@@ -1,23 +1,30 @@
-import _ from 'lodash';
 import { makeExecutableSchema } from 'graphql-tools';
 
-import { resolvers as userResolvers, typeDefs as userTypeDefs } from 'app/modules/users';
+import features from 'app/features';
 
 const RootQuery = `
 type Query {
+  dummy: Int
+}
+
+type Mutation {
+  dummy: Int
+}
+
+type Subscription {
   dummy: Int
 }
 `;
 const SchemaDefinition = `
 schema {
   query: Query
+  mutation: Mutation
+  subscription: Subscription
 }
 `;
 
-const typeDefs = [SchemaDefinition, RootQuery, ...userTypeDefs];
-
-const rootResolvers = {};
-const resolvers = _.merge(rootResolvers, userResolvers);
+const typeDefs = [SchemaDefinition, RootQuery, ...features.typeDefs];
+const resolvers = features.createResolvers();
 
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 export { schema };

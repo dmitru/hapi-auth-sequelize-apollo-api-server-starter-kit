@@ -11,5 +11,8 @@
     "ecmaFeatures": {
       "modules": true
     }
+  },
+  "rules": {
+    "import/prefer-default-export": "off"
   }
 }

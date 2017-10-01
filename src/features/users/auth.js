@@ -5,11 +5,11 @@ import JWT from 'jsonwebtoken';
 import Boom from 'boom';
 import bcrypt from 'bcryptjs';
 
-import models from 'app/models';
-
 import logger from 'app/logger';
 import sessionStore from 'app/sessionStore';
 import config from 'app/config';
+
+import User from 'app/features/users/dao';
 
 /**
  * Generate a salt at level 10 strength
@@ -46,8 +46,6 @@ export function generatePasswordResetToken() {
   });
 }
 
-const SEVEN_DAYS_IN_MS = 1000 * 3600 * 24 * 7;
-
 /**
  * Creates a new session token for a given user, saves it in the session store
  * @param {*} user
@@ -55,13 +53,13 @@ const SEVEN_DAYS_IN_MS = 1000 * 3600 * 24 * 7;
  */
 export function createSessionTokenAndLogin(user) {
   const session = {
-    valid: true,
     id: uuid(),
     userId: user.id,
-    exp: new Date().getTime() + SEVEN_DAYS_IN_MS,
   };
 
-  const token = JWT.sign(session, config.jwtSecret);
+  const token = JWT.sign(session, config.jwtSecret, {
+    expiresIn: '7 days',
+  });
   sessionStore.set(session.id, session);
   logger.debug('createTokenAndLogin: creating a token for user', {
     userId: user.id,
@@ -82,42 +80,37 @@ export function invalidateSessionToken(session) {
  * @param {*} req
  * @param {*} callback - (error: any?, sessionIsValid: bool)
  */
-export function validateSession(decodedSession, req, callback) {
+export async function validateSession(decodedSession, req, callback) {
   const sessionId = decodedSession.id;
-  sessionStore
-    .get(sessionId)
-    .then((storedSession) => {
-      if (!storedSession) {
-        logger.warn('validateSession: no stored session', { sessionId });
-        return callback(null, false);
-      }
-      const session = JSON.parse(storedSession);
-      logger.debug('validateSession: validating session for user', {
-        userId: session.userId,
+  try {
+    const storedSession = await sessionStore.get(sessionId);
+    if (!storedSession) {
+      logger.warn('validateSession: no stored session', { sessionId });
+      callback(null, false);
+      return;
+    }
+
+    const session = JSON.parse(storedSession);
+    logger.debug('validateSession: validating session for user', {
+      userId: session.userId,
+      sessionId,
+    });
+
+    if (session.exp < new Date().getTime()) {
+      invalidateSessionToken(decodedSession);
+      logger.debug('validateSession: session has expired', {
+        userId: session.id,
         sessionId,
       });
-      if (session.exp < new Date().getTime()) {
-        invalidateToken(decodedSession);
-        logger.debug('validateSession: session has expired', {
-          userId: session.id,
-          sessionId,
-        });
-        return callback(new Error('Session has expired'), false);
-      }
-      if (!session.valid === true) {
-        invalidateToken(decodedSession);
-        logger.debug('validateSession: session is invalid', {
-          userId: session.id,
-          sessionId,
-        });
-        return callback(new Error('Session is invalid'), false);
-      }
-      return callback(null, true);
-    })
-    .catch((err) => {
-      logger.error('validateSession: error', err, { sessionId });
-      callback(err, false);
-    });
+      callback(new Error('Session has expired'), false);
+      return;
+    }
+
+    callback(null, true);
+  } catch (err) {
+    logger.error('validateSession: error', err, { sessionId });
+    callback(err, false);
+  }
 }
 
 /**
@@ -128,7 +121,7 @@ export function fetchUserData(req, res) {
   if (!userId) {
     return res(null);
   }
-  return models.User.findById(req.auth.credentials.userId).then((user) => {
+  return User.getUser(req.auth.credentials.userId).then((user) => {
     if (!user) {
       logger.warn('fetchUserData: no such user', { userId });
       return res(null);

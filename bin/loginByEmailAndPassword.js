@@ -1,4 +1,4 @@
-import { createSessionTokenAndLogin } from 'app/api/auth/utils';
+import { createSessionTokenAndLogin } from 'app/features/users/auth';
 import models from 'app/models';
 
 (async () => {

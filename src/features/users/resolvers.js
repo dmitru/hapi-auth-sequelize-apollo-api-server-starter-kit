@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import models from 'app/models';
 
-const resolvers = {
+export default pubsub => ({
   Query: {
     users: () => models.User.findAll(),
     user: (obj, { id }) => models.User.findById(id),
@@ -14,6 +15,6 @@ const resolvers = {
       return models.User.findById(userId);
     },
   },
-};
-
-export default resolvers;
+  Mutation: {},
+  Subscription: {},
+});

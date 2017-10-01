@@ -1,5 +1,5 @@
 import sessionStore from 'app/sessionStore';
-import { invalidateSessionToken } from '../utils';
+import { invalidateSessionToken } from '../auth';
 
 export default {
   method: 'POST',

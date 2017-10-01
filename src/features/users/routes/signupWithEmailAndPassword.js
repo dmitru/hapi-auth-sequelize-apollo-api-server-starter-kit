@@ -6,7 +6,7 @@ import models from 'app/models';
 
 import { USER_ROLE } from 'app/constants';
 
-import { hashPassword, createSessionTokenAndLogin } from '../utils';
+import { hashPassword, createSessionTokenAndLogin } from '../auth';
 
 const signupSchema = Joi.object({
   email: Joi.string()

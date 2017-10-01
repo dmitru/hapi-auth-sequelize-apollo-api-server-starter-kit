@@ -3,7 +3,7 @@ import Boom from 'boom';
 import bcrypt from 'bcryptjs';
 
 import models from 'app/models';
-import { createSessionTokenAndLogin } from '../utils';
+import { createSessionTokenAndLogin } from '../auth';
 
 const authenticateUserSchema = Joi.object({
   email: Joi.string()
