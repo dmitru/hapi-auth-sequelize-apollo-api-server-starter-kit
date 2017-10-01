@@ -7,8 +7,9 @@ type User {
 }
 
 extend type Query {
-  users: [User!]!
+  me: User
   user(id: Int!): User
+  users: [User!]!
 }
 `;
 

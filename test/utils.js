@@ -1,5 +1,5 @@
 import models from 'app/models';
-import { createSessionTokenAndLogin, hashPassword } from 'app/api/auth/utils';
+import { createSessionTokenAndLogin, hashPassword } from 'app/modules/auth/utils';
 
 export async function createUser(data) {
   const { password } = data;

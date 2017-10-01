@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { makeExecutableSchema } from 'graphql-tools';
 
-import { resolvers as userResolvers, typeDefs as userTypeDefs } from './users';
+import { resolvers as userResolvers, typeDefs as userTypeDefs } from 'app/modules/users';
 
 const RootQuery = `
 type Query {
-  me: User
+  dummy: Int
 }
 `;
 const SchemaDefinition = `

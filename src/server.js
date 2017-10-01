@@ -9,7 +9,7 @@ import { schema as graphQLSchema } from 'app/graphql/schema';
 import logger from 'app/logger';
 import GoodWinston from 'good-winston';
 
-import { validateSession } from 'app/api/auth/utils';
+import { validateSession } from 'app/modules/auth/utils';
 import config from 'app/config';
 import models from 'app/models';
 
@@ -116,8 +116,8 @@ function createServer() {
           // Look through the routes in
           // all the subdirectories of API
           // and create a new route for each
-          logger.debug('createServer: Scanning api/**/routes/*.js for route files...');
-          glob.sync(path.join(__dirname, 'api/**/routes/*.js')).forEach((file) => {
+          logger.debug('createServer: Scanning modules/**/apiRoutes/*.js for route files...');
+          glob.sync(path.join(__dirname, 'modules/**/apiRoutes/*.js')).forEach((file) => {
             logger.debug(`createServer: Adding route ${file}`);
             const route = require(file).default;
             server.route(route);
