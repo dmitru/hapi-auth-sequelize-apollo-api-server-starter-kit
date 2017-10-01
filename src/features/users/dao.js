@@ -13,6 +13,10 @@ class UserDAO {
     });
   }
 
+  async getUsers() {
+    return models.User.findAll();
+  }
+
   async create(data) {
     return models.User.build(data).save();
   }

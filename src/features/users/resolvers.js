@@ -1,18 +1,19 @@
 /* eslint-disable no-unused-vars */
-import models from 'app/models';
+import Boom from 'boom';
+import User from 'app/features/users/dao';
 
 export default pubsub => ({
   Query: {
-    users: () => models.User.findAll(),
-    user: (obj, { id }) => models.User.findById(id),
+    users: () => User.getUsers(),
+    user: (obj, { id }) => User.getUser(id),
     me: (obj, info, context) => {
       const { auth } = context;
       if (!auth || !auth.isAuthenticated || !auth.credentials || !auth.credentials.userId) {
-        return null;
+        throw new Error(Boom.unauthorized());
       }
 
       const { credentials: { userId } } = auth;
-      return models.User.findById(userId);
+      return User.getUser(userId);
     },
   },
   Mutation: {},

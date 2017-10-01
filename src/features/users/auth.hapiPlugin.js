@@ -18,11 +18,6 @@ function register(server, options, next) {
         key: config.jwtSecret,
         verifyOptions: { algorithms: ['HS256'], ignoreExpiration: true },
         validateFunc: validateSession,
-        errorFunc: (errorContext) => {
-          errorContext.errorType = 'unauthorized';
-          errorContext.message = 'session-expired';
-          return errorContext;
-        },
       });
       next();
     },
