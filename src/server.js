@@ -54,6 +54,10 @@ function createServer() {
                 context: {
                   auth: request.auth,
                 },
+                formatError: (err) => {
+                  logger.error('graphql error: ', err);
+                  return err;
+                },
               }),
               route: {
                 cors: true,
