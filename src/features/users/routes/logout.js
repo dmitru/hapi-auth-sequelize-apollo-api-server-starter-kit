@@ -5,8 +5,7 @@ export default {
   path: '/api/logout/',
   config: {
     handler: async (req, res) => {
-      const { credentials } = req.auth;
-      const sessionId = credentials.id;
+      const { credentials: { sessionId } } = req.auth;
       await invalidateSessionBySessionId(sessionId);
       res({ text: 'You have been logged out' });
     },

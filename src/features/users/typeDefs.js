@@ -23,12 +23,12 @@ extend type Mutation {
     role: String!
   ): User!
 
-  changePassword(
+  updatePassword(
     id: Int!
     password: String!
   ): User!
 
-  deleteUser(id: Int!)
+  deleteUser(id: Int!): Boolean!
 }
 `;
 

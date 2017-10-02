@@ -9,10 +9,15 @@ export class RedisSessionStore {
     });
   }
 
-  set(key, data) {
+  set(key, data, expireSeconds = null) {
     const dataTransformed = typeof data === 'string' ? data : JSON.stringify(data);
     logger.debug(`RedisSessionStore: set ${key}`);
-    this.client.set(key, dataTransformed);
+
+    if (expireSeconds != null) {
+      this.client.set(key, dataTransformed, 'EX', expireSeconds);
+    } else {
+      this.client.set(key, dataTransformed);
+    }
     return Promise.resolve();
   }
 

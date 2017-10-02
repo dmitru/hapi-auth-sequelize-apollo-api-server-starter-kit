@@ -34,7 +34,7 @@ export default pubsub => ({
       if (!(context.user.role === USER_ROLE.ADMIN || context.user.id === id)) {
         throw new Error('unauthorized');
       }
-      return User.delete(id);
+      return (await User.delete(id)) === 1;
     }),
   },
   Subscription: {},
