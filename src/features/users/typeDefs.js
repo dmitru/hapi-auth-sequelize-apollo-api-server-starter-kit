@@ -11,6 +11,13 @@ extend type Query {
   user(id: Int!): User
   users: [User!]!
 }
+
+extend type Mutation {
+  updateProfile(
+    id: Int!
+    displayName: String
+  ): User!
+}
 `;
 
 export default [User];

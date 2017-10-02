@@ -20,6 +20,14 @@ class UserDAO {
   async create(data) {
     return models.User.build(data).save();
   }
+
+  async update(id, data) {
+    const user = await this.getUser(id);
+    if (!user) {
+      throw new Error('No such user');
+    }
+    user.update(data);
+  }
 }
 
 const userDao = new UserDAO();

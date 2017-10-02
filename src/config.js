@@ -9,8 +9,7 @@ const webAppPublicUrl = normalizeUrl(process.env.WEBAPP_PUBLIC_URL || 'http://lo
 
 export default {
   webAppPublicUrl,
-  jwtSecret:
-    process.env.JWT_SECRET || 'development-secret-key-at-least-32-chars-long',
+  jwtSecret: process.env.JWT_SECRET || 'development-secret-key-at-least-32-chars-long',
 
   db: {
     username: process.env.DB_USER,
@@ -19,7 +18,7 @@ export default {
     host: process.env.DB_HOST || '127.0.0.1',
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: false,
+    logging: true,
   },
 
   recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY,

@@ -16,6 +16,8 @@ export default pubsub => ({
       return User.getUser(userId);
     },
   },
-  Mutation: {},
+  Mutation: {
+    updateProfile: (obj, { id, ...otherData }) => User.update(id, otherData),
+  },
   Subscription: {},
 });
