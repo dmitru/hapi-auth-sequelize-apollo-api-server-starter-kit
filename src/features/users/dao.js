@@ -26,7 +26,7 @@ class UserDAO {
     if (!user) {
       throw new Error('No such user');
     }
-    user.update(data);
+    return user.update(data);
   }
 }
 

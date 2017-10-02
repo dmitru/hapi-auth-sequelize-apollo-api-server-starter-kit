@@ -1,20 +1,14 @@
 /* eslint-disable no-unused-vars */
 import Boom from 'boom';
+
 import User from './dao';
+import { requiresAdmin, requiresAuth } from './permissions';
 
 export default pubsub => ({
   Query: {
-    users: () => User.getUsers(),
+    users: requiresAdmin.createResolver(() => User.getUsers()),
     user: (obj, { id }) => User.getUser(id),
-    me: (obj, info, context) => {
-      const { auth } = context;
-      if (!auth || !auth.isAuthenticated || !auth.credentials || !auth.credentials.userId) {
-        throw new Error(Boom.unauthorized());
-      }
-
-      const { credentials: { userId } } = auth;
-      return User.getUser(userId);
-    },
+    me: requiresAuth.createResolver((obj, info, context) => context.user),
   },
   Mutation: {
     updateProfile: (obj, { id, ...otherData }) => User.update(id, otherData),
