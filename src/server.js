@@ -3,9 +3,9 @@ import glob from 'glob';
 import Hapi from 'hapi';
 import Good from 'good';
 
-import AuthHapiPlugin from 'app/features/users/auth.hapiPlugin';
-import SocialAuthHapiPlugin from 'app/features/users/socialAuth.hapiPlugin';
-import GraphQLHapiPlugin from 'app/graphql/graphql.hapiPlugin';
+import AuthHapiPlugin from 'app/features/users/hapiPlugins/auth.hapiPlugin';
+import SocialAuthHapiPlugin from 'app/features/users/hapiPlugins/socialAuth.hapiPlugin';
+import GraphQLHapiPlugin from 'app/graphql/hapiPlugins/graphql.hapiPlugin';
 
 import logger from 'app/logger';
 import GoodWinston from 'good-winston';

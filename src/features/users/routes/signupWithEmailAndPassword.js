@@ -5,7 +5,7 @@ import logger from 'app/logger';
 
 import { USER_ROLE } from 'app/constants';
 
-import { hashPassword, createSessionTokenAndLogin } from '../auth';
+import { hashPassword, createSessionTokenAndLogin } from '../authUtils';
 import User from '../dao';
 
 const signupSchema = Joi.object({

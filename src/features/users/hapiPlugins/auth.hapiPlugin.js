@@ -2,7 +2,7 @@ import config from 'app/config';
 import logger from 'app/logger';
 import HapiAuthJWT2 from 'hapi-auth-jwt2';
 
-import { validateSession } from './auth';
+import { validateSession } from '../authUtils';
 
 function register(server, options, next) {
   server.register(

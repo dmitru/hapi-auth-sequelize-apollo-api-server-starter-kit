@@ -1,4 +1,4 @@
-import { invalidateSessionBySessionId } from '../auth';
+import { invalidateSessionBySessionId } from '../authUtils';
 
 export default {
   method: 'POST',

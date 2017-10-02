@@ -8,7 +8,7 @@ import logger from 'app/logger';
 import sessionStore from 'app/sessionStore';
 import config from 'app/config';
 
-import User from 'app/features/users/dao';
+import User from './dao';
 
 /**
  * Returns a hashed password

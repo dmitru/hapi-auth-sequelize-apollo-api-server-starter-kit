@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import config from 'app/config';
 
-import { refreshTokens } from './auth';
+import { refreshTokens } from './authUtils';
 import typeDefs from './typeDefs';
 import createResolvers from './resolvers';
 import Feature from '../feature';

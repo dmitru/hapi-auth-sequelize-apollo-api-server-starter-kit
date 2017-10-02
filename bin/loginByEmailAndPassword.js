@@ -1,4 +1,4 @@
-import { createSessionTokenAndLogin } from 'app/features/users/auth';
+import { createSessionTokenAndLogin } from 'app/features/users/authUtils';
 import User from 'app/features/users/dao';
 
 (async () => {

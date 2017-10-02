@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import Boom from 'boom';
-import User from 'app/features/users/dao';
+import User from './dao';
 
 export default pubsub => ({
   Query: {
