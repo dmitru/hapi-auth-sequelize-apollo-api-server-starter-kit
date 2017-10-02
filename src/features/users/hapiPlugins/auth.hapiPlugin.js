@@ -1,3 +1,4 @@
+import Boom from 'boom';
 import config from 'app/config';
 import logger from 'app/logger';
 import HapiAuthJWT2 from 'hapi-auth-jwt2';
@@ -29,14 +30,15 @@ async function validateSessionAndFetchUserData(decodedSession, req, callback) {
         userId,
         sessionId,
       });
-      callback(new Error('Session has expired'), false);
+      callback(Boom.unauthorized('Unauthorized: Session has expired'), false);
       return;
     }
 
     const user = await User.getUser(userId);
     if (!user) {
       logger.warn('validateSession: no user', { userId });
-      callback(new Error('Unauthorized'), false);
+      callback(Boom.unauthorized('No user found for given session'), false);
+      return;
     }
 
     const credentials = {

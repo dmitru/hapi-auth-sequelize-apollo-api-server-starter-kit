@@ -31,7 +31,7 @@ class UserDAO {
   async update(id, data) {
     const user = await this.getUser(id);
     if (!user) {
-      throw new Error('No such user');
+      return null;
     }
     return user.update(data);
   }

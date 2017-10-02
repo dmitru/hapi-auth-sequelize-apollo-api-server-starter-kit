@@ -1,18 +1,39 @@
 import { graphqlHapi, graphiqlHapi } from 'apollo-server-hapi';
-import { schema as graphQLSchema } from 'app/graphql/schema';
+import { formatError as apolloFormatError } from 'apollo-errors';
 
+import { GraphQLError } from 'graphql';
+import { schema as graphQLSchema } from 'app/graphql/schema';
 import logger from 'app/logger';
 
-export const getGraphqlOptions = async request => ({
-  schema: graphQLSchema,
-  context: {
-    auth: request.auth,
-  },
-  formatError: (err) => {
-    logger.error('graphql error: ', err);
-    return err;
-  },
-});
+import { UnknownError } from '../errors';
+
+const formatError = (error) => {
+  logger.error('graphql error: ', error);
+  let e = apolloFormatError(error);
+
+  if (e instanceof GraphQLError) {
+    e = apolloFormatError(new UnknownError({
+      data: {
+        originalMessage: e.message,
+        originalError: e.name,
+      },
+    }));
+  }
+
+  return e;
+};
+
+export const getGraphqlOptions = async (request) => {
+  const { credentials = {} } = request.auth;
+  return {
+    schema: graphQLSchema,
+    context: {
+      isAuthenticated: request.auth.isAuthenticated,
+      ...credentials,
+    },
+    formatError,
+  };
+};
 
 function register(server, options, next) {
   server.register(

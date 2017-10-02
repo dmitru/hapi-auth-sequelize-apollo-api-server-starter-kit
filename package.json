@@ -14,6 +14,8 @@
     "app": "./src"
   },
   "dependencies": {
+    "apollo-errors": "^1.5.1",
+    "apollo-resolvers": "^1.0.3",
     "apollo-server-hapi": "^1.1.2",
     "app": "file:./src",
     "babel-cli": "^6.26.0",

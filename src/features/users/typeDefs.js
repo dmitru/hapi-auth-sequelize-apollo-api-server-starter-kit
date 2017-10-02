@@ -13,19 +13,17 @@ extend type Query {
 }
 
 extend type Mutation {
-  updateProfile(
-    id: Int!
+  updateMyProfile(
     displayName: String
+  ): User!
+
+  updateMyPassword(
+    password: String!
   ): User!
 
   changeRole(
     id: Int!
     role: String!
-  ): User!
-
-  updatePassword(
-    id: Int!
-    password: String!
   ): User!
 
   deleteUser(id: Int!): Boolean!
