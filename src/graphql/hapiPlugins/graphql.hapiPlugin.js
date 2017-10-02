@@ -2,6 +2,7 @@ import { graphqlHapi, graphiqlHapi } from 'apollo-server-hapi';
 import { formatError as apolloFormatError } from 'apollo-errors';
 
 import { GraphQLError } from 'graphql';
+import features from 'app/features';
 import { schema as graphQLSchema } from 'app/graphql/schema';
 import logger from 'app/logger';
 
@@ -23,17 +24,11 @@ const formatError = (error) => {
   return e;
 };
 
-export const getGraphqlOptions = async (request) => {
-  const { credentials = {} } = request.auth;
-  return {
-    schema: graphQLSchema,
-    context: {
-      isAuthenticated: request.auth.isAuthenticated,
-      ...credentials,
-    },
-    formatError,
-  };
-};
+export const getGraphqlOptions = async request => ({
+  schema: graphQLSchema,
+  context: await features.createContext(request),
+  formatError,
+});
 
 function register(server, options, next) {
   server.register(
