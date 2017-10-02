@@ -3,19 +3,16 @@ import { schema as graphQLSchema } from 'app/graphql/schema';
 
 import logger from 'app/logger';
 
-export const getGraphqlOptions = async (request) => {
-  console.log(request.auth);
-  return {
-    schema: graphQLSchema,
-    context: {
-      auth: request.auth,
-    },
-    formatError: (err) => {
-      logger.error('graphql error: ', err);
-      return err;
-    },
-  };
-};
+export const getGraphqlOptions = async request => ({
+  schema: graphQLSchema,
+  context: {
+    auth: request.auth,
+  },
+  formatError: (err) => {
+    logger.error('graphql error: ', err);
+    return err;
+  },
+});
 
 function register(server, options, next) {
   server.register(

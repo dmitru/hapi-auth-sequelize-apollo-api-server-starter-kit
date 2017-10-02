@@ -17,6 +17,18 @@ extend type Mutation {
     id: Int!
     displayName: String
   ): User!
+
+  changeRole(
+    id: Int!
+    role: String!
+  ): User!
+
+  changePassword(
+    id: Int!
+    password: String!
+  ): User!
+
+  deleteUser(id: Int!)
 }
 `;
 

@@ -21,6 +21,13 @@ class UserDAO {
     return models.User.build(data).save();
   }
 
+  async delete(id) {
+    return models.User.destroy({
+      where: { id },
+      limit: 1,
+    });
+  }
+
   async update(id, data) {
     const user = await this.getUser(id);
     if (!user) {
